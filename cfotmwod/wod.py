@@ -4,21 +4,21 @@ Library that gets and sets the WOD data
 """
 import logging
 
-import requests
+from google.appengine.ext import db
+
+import urllib2
 from datetime import datetime
 from BeautifulSoup import BeautifulSoup
-
-from google.appengine.ext import db
 
 class WOD(db.Model):
 
     created_at = db.DateTimeProperty(auto_now_add=True)
-    wod_date = db.DateTimeProperty()
-    wod = db.StringProperty()
+    wod_date = db.DateProperty(required=True)
+    wod = db.StringProperty(multiline=True)
 
 def get():
     url = "http://www.crossfitonthemove.com/"
-    soup = BeautifulSoup(requests.get(url).content)
+    soup = BeautifulSoup(urllib2.urlopen(url))
 
     # get our date
     # if there is more then one date, parser needs updating
@@ -36,4 +36,4 @@ def get():
         if not tag.attrs:
             wod += '%s\n' % tag.prettify()
 
-    WOD(wod=wod,wod_date=datetime(date,'%B %d, %Y').put()
+    return WOD(wod=wod,wod_date=datetime.strptime(date,'%B %d, %Y').date()).put()
