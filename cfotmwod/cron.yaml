@@ -1,0 +1,4 @@
+cron:
+- description: wod web scrap
+  url: /wod/get
+  schedule: every day 19:35

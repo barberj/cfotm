@@ -16,7 +16,7 @@ class WOD(db.Model):
     wod_date = db.DateTimeProperty()
     wod = db.StringProperty()
 
-def get_wod():
+def get():
     url = "http://www.crossfitonthemove.com/"
     soup = BeautifulSoup(requests.get(url).content)
 
