@@ -17,6 +17,8 @@ class WOD(db.Model):
     wod = db.StringProperty(multiline=True)
 
 def get():
+    # other urlfetch options
+    # http://code.google.com/appengine/docs/python/urlfetch/overview.html
     url = "http://www.crossfitonthemove.com/"
     soup = BeautifulSoup(urllib2.urlopen(url))
 
