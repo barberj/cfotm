@@ -4,65 +4,36 @@ Library that gets and sets the WOD data
 """
 import logging
 
-import re
-import json
-import urllib2
-from BeautifulSoup import BeautifulSoup, NavigableString, Tag
+import requests
+from datetime import datetime
+from BeautifulSoup import BeautifulSoup
 
-def soup_line_break(soup_results):
-    """
-    The soup results have line breaks which we want
-    converted to spaces
-    """
+from google.appengine.ext import db
 
-    line_break_pattern = '<br\s*/*>'
+class WOD(db.Model):
 
-    br = re.compile(line_break_pattern, re.I)
-
-    for result in soup_results:
-        for conent in result.contents:
-            br.sub(result.content)
-
-    return result
-
-def brs(soup_results):
-
-    out = ''
-    for result in soup_results:
-        brs = result.findAll('br')
-        for br in brs:
-            next = br.nextSibling
-            if not (next and isinstance(next,NavigableString)):
-                continue
-            next2 = next.nextSibling
-            if next2 and isinstance(next2,Tag) and next2.name == 'br':
-                text = str(next).strip()
-                if text:
-                    out += '\n%s' % text
-
-    print out
+    created_at = db.DateTimeProperty(auto_now_add=True)
+    wod_date = db.DateTimeProperty()
+    wod = db.StringProperty()
 
 def get_wod():
     url = "http://www.crossfitonthemove.com/"
-    html = BeautifulSoup(urllib2.urlopen(url)).prettify()
-    soup = BeautifulSoup(html)
-
-    # pull out just the HTML containing the WOD
-    wod_content = soup.find("div",{"id":"content"}).find("div",{"class":"right"})
+    soup = BeautifulSoup(requests.get(url).content)
 
     # get our date
-    date_content = wod_content.find("p",{"class":"date"})
-    date = date_content.text
+    # if there is more then one date, parser needs updating
+    date = soup("p",{"class":"date"})[0].text
 
-    # make soup again
-    _content= wod_content.findAll(lambda tag: tag.name=="p" and not tag.attrs)
+    # only 1 wod for the day
+    wod_soup = soup('a',{'href':'blog/category/wod'})[0]
 
-    brs(_content)
-
-    print _content
+    # the actual exercises are in
+    # paragraph tags in the wod soup
     wod = ''
-    for txt in _content:
-        wod += '%s\n' % txt.text
+    for tag in wod_soup('p'):
+        # skip paragraph tags with attributes
+        # such as the date class
+        if not tag.attrs:
+            wod += '%s\n' % tag.prettify()
 
-    print "On %s the wod is:\n%s" % (date, wod)
-    return _content
+    WOD(wod=wod,wod_date=datetime(date,'%B %d, %Y').put()
