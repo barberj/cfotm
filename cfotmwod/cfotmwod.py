@@ -22,8 +22,8 @@ class MainHandler(webapp2.RequestHandler):
 
 class CronHandler(webapp2.RequestHandler):
     def get(self):
-        daily_wod_key = wod.get()
-        self.response.out.write('Created wod with key %s' % daily_wod_key.id_or_name())
+        wod.get()
+        self.redirect('/')
 
 app = webapp2.WSGIApplication([
     webapp2.Route(r'/', handler=MainHandler, name='main'),

@@ -25,17 +25,21 @@ def get():
     # get our date
     # if there is more then one date, parser needs updating
     date = soup("p",{"class":"date"})[0].text
+    date = datetime.strptime(date,'%B %d, %Y').date()
 
-    # only 1 wod for the day
-    wod_soup = soup('a',{'href':'blog/category/wod'})[0]
+    # only 1 wod for the day so grab first element from soup
+    # then slice to avoid first 3 list elements
+    # (the WOD header tag and the date)
+    wodlst = soup('a',{'href':'blog/category/wod'})[0].findAll(text=True)[4:]
 
-    # the actual exercises are in
-    # paragraph tags in the wod soup
+    # make a string of of wod parts list
     wod = ''
-    for tag in wod_soup('p'):
-        # skip paragraph tags with attributes
-        # such as the date class
-        if not tag.attrs:
-            wod += '%s\n' % tag.prettify()
+    for line in wodlst:
+        wod += line
 
-    return WOD(wod=wod,wod_date=datetime.strptime(date,'%B %d, %Y').date()).put()
+    logging.info('Wod is %s', date)
+    # wods are unique by date, so if we don't
+    # have this wod_date then add the wod
+    if not WOD.gql("WHERE wod_date=:date", date=date).get():
+        WOD(wod=wod,wod_date=date).put()
+
