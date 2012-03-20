@@ -13,12 +13,16 @@
 # limitations under the License.
 #
 import webapp2
+from google.appengine.ext.webapp import template
+
 import logging
 import wod
+
 logging.root.level = logging.DEBUG
 class MainHandler(webapp2.RequestHandler):
     def get(self):
-        self.response.out.write('Hello world!')
+        return self.response.out.write(template.render('index.html',
+                               {}))
 
 class CronHandler(webapp2.RequestHandler):
     def get(self):

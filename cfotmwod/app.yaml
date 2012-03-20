@@ -9,5 +9,14 @@ handlers:
   static_files: favicon.ico
   upload: favicon\.ico
 
+- url: /touch
+  static_dir: touch
+
+- url: /css
+  static_dir: touch/resources/css
+
+- url: /js
+  static_dir: public/js
+
 - url: .*
   script: cfotmwod.app
