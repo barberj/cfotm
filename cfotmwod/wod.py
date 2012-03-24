@@ -2,14 +2,13 @@
 """
 Library that gets and sets the WOD data
 """
-import logging
 
 from google.appengine.ext import db
-
 import urllib2
 from datetime import datetime
 from BeautifulSoup import BeautifulSoup
 
+import logging
 class WOD(db.Model):
 
     created_at = db.DateTimeProperty(auto_now_add=True)
