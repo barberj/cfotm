@@ -50,10 +50,12 @@ def jsonify(func):
 
 class ViewWodsHandler(webapp2.RequestHandler):
 
-    @jsonify
     def get(self):
-        wods = [w for w in wod.WOD.all()]
-        return wods
+        query = wod.WOD.all()
+        wods = [w for w in query.order('-wod_date')]
+        self.response.headers.add_header('content-type', 'application/json',
+                    charset='utf-8')
+        return self.response.out.write(simplejson.dumps(wods, cls=jsonEncoder))
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
