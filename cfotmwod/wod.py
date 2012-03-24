@@ -26,15 +26,14 @@ def get():
     date = soup("p",{"class":"date"})[0].text
     date = datetime.strptime(date,'%B %d, %Y').date()
 
-    # only 1 wod for the day so grab first element from soup
-    # then slice to avoid first 3 list elements
-    # (the WOD header tag and the date)
-    wodlst = soup('a',{'href':'blog/category/wod'})[0].findAll(text=True)[4:]
+    # wod with tags
+    wod = soup.find("div",{"id":"content"}).find("div",{"class":"right"})
+    wodlst = wod.findAll(lambda tag: tag.name=="p" and not tag.attrs)
 
     # make a string of of wod parts list
     wod = ''
     for line in wodlst:
-        wod += line
+        wod += line.prettify()
 
     logging.info('Wod is %s', date)
     # wods are unique by date, so if we don't

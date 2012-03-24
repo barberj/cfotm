@@ -23,4 +23,4 @@ handlers:
 
 skip_files:
 - ^(.*/)?README\.md
-- ^(.*/)*\.pyc
+- ^(.*/).*\.pyc
