@@ -1,5 +1,5 @@
 Ext.application({
-    name: 'Sencha',
+    name: 'CFOTM',
 
     launch: function() {
         Ext.create("Ext.tab.Panel", {
@@ -9,7 +9,7 @@ Ext.application({
             items: [
                 {
                     xtype: 'nestedlist',
-                    title: 'CFOTM WODS',
+                    title: 'WODS',
                     iconCls: 'star',
                     displayField: 'wod_date',
 
