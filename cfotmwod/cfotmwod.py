@@ -16,7 +16,6 @@ import webapp2
 from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 import datetime
-from decorator import decorator
 import simplejson
 
 import wod
@@ -28,25 +27,12 @@ class jsonEncoder(simplejson.JSONEncoder):
         if isinstance(obj, datetime.datetime):
             return obj.isoformat()
         elif isinstance(obj, datetime.date):
-            logging.info('We have a date time %s' % obj.strftime('%B %d, %Y'))
             return obj.strftime('%B %d, %Y')
         elif isinstance(obj, db.Model):
             return dict((p, getattr(obj, p))
                         for p in obj.properties())
         else:
             return simplejson.JSONEncoder.default(self,obj)
-
-def jsonify(func):
-    """
-    Decorator that formats output to JSON
-    """
-    def to_json(*args, **kwargs):
-        self.response.headers['Access-Control-Allow-Origin'] = '*'
-        self.response.headers.add_header('content-type', 'application/json',
-#                    'access-control-allow-origin: *',
-#                    'access-control-allow-methods: GET',
-                    charset='utf-8')
-        return self.response.out.write(simplejson.dumps(func(*args, **kwargs), cls=jsonEncoder))
 
 class ViewWodsHandler(webapp2.RequestHandler):
 
