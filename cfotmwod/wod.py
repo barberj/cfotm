@@ -33,7 +33,7 @@ def get():
     # make a string of of wod parts list
     wod = ''
     for line in wodlst:
-        wod += line.prettify()
+        wod += line.prettify().replace('\xc2\xa0',' ')
 
     logging.info('Wod is %s', date)
     # wods are unique by date, so if we don't
