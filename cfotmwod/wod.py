@@ -4,6 +4,8 @@ Library that gets and sets the WOD data
 """
 
 from google.appengine.ext import db
+from google.appengine.api import memcache
+
 import urllib2
 from datetime import datetime
 from BeautifulSoup import BeautifulSoup
@@ -38,6 +40,37 @@ def get():
     logging.info('Wod is %s', date)
     # wods are unique by date, so if we don't
     # have this wod_date then add the wod
-    if not WOD.gql("WHERE wod_date=:date", date=date).get():
-        WOD(wod=wod,wod_date=date).put()
 
+    # check the cache
+    cache_key = date.strftime('%Y%m%d')
+    cached = memcache.get(cache_key)
+
+    if not cached:
+        logging.info('Wod is not cached')
+        # add to the cache
+        memcache.add(key=cache_key, value=wod, time=60*60*24) # store for a day
+
+        # pull from data store to ensure it
+        # wasn't just cleared from cache
+        current_wod = WOD.gql("WHERE wod_date=:date", date=date).get()
+        if not current_wod:
+            # add the new wod
+            WOD(wod=wod,wod_date=date).put()
+        else:
+            # see if the wod has changed
+            if current_wod.wod != wod:
+                # update the wod to the new value
+                current_wod.wod = wod
+                current_wod.put()
+    else:
+        logging.info('Wod is cached')
+        # verify cached value is same as new
+        if cached != wod:
+            logging.info('Going to update Wod as it has changed')
+            # update the wod to the new value
+            current_wod = WOD.gql("WHERE wod_date=:date", date=date).get()
+            current_wod.wod = wod
+            current_wod.put()
+
+            # update the cache
+            memcache.set(key=cache_key, value=wod, time=60*60*24) # store for a day
