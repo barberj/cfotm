@@ -56,12 +56,14 @@ def get():
         if not current_wod:
             # add the new wod
             WOD(wod=wod,wod_date=date).put()
+            memcache.delete(key='wods')
         else:
             # see if the wod has changed
             if current_wod.wod != wod:
                 # update the wod to the new value
                 current_wod.wod = wod
                 current_wod.put()
+                memcache.delete(key='wods')
     else:
         logging.info('Wod is cached')
         # verify cached value is same as new
@@ -74,3 +76,5 @@ def get():
 
             # update the cache
             memcache.set(key=cache_key, value=wod, time=60*60*24) # store for a day
+            # we made a wod change so we need to remove the wods collection cache
+            memcache.delete(key='wods')

@@ -14,6 +14,7 @@
 #
 import webapp2
 from google.appengine.ext import db
+from google.appengine.api import memcache
 from google.appengine.ext.webapp import template
 import datetime
 import simplejson
@@ -35,13 +36,24 @@ class jsonEncoder(simplejson.JSONEncoder):
             return simplejson.JSONEncoder.default(self,obj)
 
 class ViewWodsHandler(webapp2.RequestHandler):
-
     def get(self):
-        query = wod.WOD.all()
-        wods = [w for w in query.order('-wod_date')]
+
+        # check cache
+        cached_wods = memcache.get('wods')
+        if not cached_wods:
+            logging.info('WODs collection not cached')
+            # wods aren't in the cache
+            # lets go to the datastore
+            query = wod.WOD.all()
+            wods = [w for w in query.order('-wod_date')]
+            wods = simplejson.dumps(wods, cls=jsonEncoder)
+            # add to cache
+            memcache.add('wods',wods)
+
+        # update our headers for returning json
         self.response.headers.add_header('content-type', 'application/json',
                     charset='utf-8')
-        return self.response.out.write(simplejson.dumps(wods, cls=jsonEncoder))
+        return self.response.out.write(cached_wods or wods)
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
