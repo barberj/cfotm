@@ -5,8 +5,8 @@ Library that gets and sets the WOD data
 
 from google.appengine.ext import db
 from google.appengine.api import memcache
+from google.appengine.api import urlfetch
 
-import urllib2
 from datetime import datetime
 from BeautifulSoup import BeautifulSoup
 
@@ -21,7 +21,7 @@ def get():
     # other urlfetch options
     # http://code.google.com/appengine/docs/python/urlfetch/overview.html
     url = "http://www.crossfitonthemove.com/"
-    soup = BeautifulSoup(urllib2.urlopen(url))
+    soup = BeautifulSoup(urlfetch.fetch(url, headers={'Cache-Control' : 'max-age=300'}).content)
 
     # get our date
     # if there is more then one date, parser needs updating
@@ -35,7 +35,7 @@ def get():
     # make a string of of wod parts list
     wod = ''
     for line in wodlst:
-        wod += line.prettify().replace('\xc2\xa0',' ')
+        wod += line.prettify().replace('\xc2\xa0',' ').replace('\xc3\x97',' x ')
 
     logging.info('Wod is %s', date)
     # wods are unique by date, so if we don't
