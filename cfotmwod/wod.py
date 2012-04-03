@@ -39,7 +39,8 @@ def get():
                                replace('\xc3\x97',' x ').\
                                replace('\xe2\x80\x9d','"')
 
-    logging.info('Wod is %s', date)
+    logging.debug('Wod is %s', date)
+    logging.debug('Wod is %s', wod)
     # wods are unique by date, so if we don't
     # have this wod_date then add the wod
 
@@ -48,7 +49,7 @@ def get():
     cached = memcache.get(cache_key)
 
     if not cached:
-        logging.info('Wod is not cached')
+        logging.debug('Wod is not cached')
         # add to the cache
         memcache.add(key=cache_key, value=wod, time=60*60*24) # store for a day
 
@@ -67,14 +68,20 @@ def get():
                 current_wod.put()
                 memcache.delete(key='wods')
     else:
-        logging.info('Wod is cached')
+        logging.debug('Wod is cached')
         # verify cached value is same as new
         if cached != wod:
-            logging.info('Going to update Wod as it has changed')
+            logging.debug('Going to update Wod as it has changed')
             # update the wod to the new value
             current_wod = WOD.gql("WHERE wod_date=:date", date=date).get()
-            current_wod.wod = db.Text(wod)
-            current_wod.put()
+            # should never not have a current wod
+            # since its cached, but just in case
+            if current_wod:
+                current_wod.wod = db.Text(wod)
+                current_wod.put()
+            else:
+                logging.debug('Cached, but not...')
+                WOD(wod=db.Text(wod),wod_date=date).put()
 
             # update the cache
             memcache.set(key=cache_key, value=wod, time=60*60*24) # store for a day
