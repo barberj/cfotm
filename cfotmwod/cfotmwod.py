@@ -17,13 +17,13 @@ from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.ext.webapp import template
 import datetime
-import simplejson
+import json
 
 import wod
 
 import logging
 
-class jsonEncoder(simplejson.JSONEncoder):
+class jsonEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime.datetime):
             return obj.isoformat()
@@ -33,7 +33,7 @@ class jsonEncoder(simplejson.JSONEncoder):
             return dict((p, getattr(obj, p))
                         for p in obj.properties())
         else:
-            return simplejson.JSONEncoder.default(self,obj)
+            return json.JSONEncoder.default(self,obj)
 
 class ViewWodsHandler(webapp2.RequestHandler):
     def get(self):
@@ -46,7 +46,7 @@ class ViewWodsHandler(webapp2.RequestHandler):
             # lets go to the datastore
             query = wod.WOD.all()
             wods = [w for w in query.order('-wod_date')]
-            wods = simplejson.dumps(wods, cls=jsonEncoder)
+            wods = json.dumps(wods, cls=jsonEncoder)
             # add to cache
             memcache.add('wods',wods)
 
