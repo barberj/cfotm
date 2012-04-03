@@ -15,7 +15,7 @@ class WOD(db.Model):
 
     created_at = db.DateTimeProperty(auto_now_add=True)
     wod_date = db.DateProperty(required=True)
-    wod = db.StringProperty(multiline=True)
+    wod = db.TextProperty()
 
 def get():
     # other urlfetch options
@@ -35,7 +35,9 @@ def get():
     # make a string of of wod parts list
     wod = ''
     for line in wodlst:
-        wod += line.prettify().replace('\xc2\xa0',' ').replace('\xc3\x97',' x ')
+        wod += line.prettify().replace('\xc2\xa0',' ').\
+                               replace('\xc3\x97',' x ').\
+                               replace('\xe2\x80\x9d','"')
 
     logging.info('Wod is %s', date)
     # wods are unique by date, so if we don't
@@ -55,13 +57,13 @@ def get():
         current_wod = WOD.gql("WHERE wod_date=:date", date=date).get()
         if not current_wod:
             # add the new wod
-            WOD(wod=wod,wod_date=date).put()
+            WOD(wod=db.Text(wod),wod_date=date).put()
             memcache.delete(key='wods')
         else:
             # see if the wod has changed
             if current_wod.wod != wod:
                 # update the wod to the new value
-                current_wod.wod = wod
+                current_wod.wod = db.Text(wod)
                 current_wod.put()
                 memcache.delete(key='wods')
     else:
@@ -71,7 +73,7 @@ def get():
             logging.info('Going to update Wod as it has changed')
             # update the wod to the new value
             current_wod = WOD.gql("WHERE wod_date=:date", date=date).get()
-            current_wod.wod = wod
+            current_wod.wod = db.Text(wod)
             current_wod.put()
 
             # update the cache

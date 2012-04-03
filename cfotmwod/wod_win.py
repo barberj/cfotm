@@ -33,7 +33,7 @@ def get():
     for line in wodlst:
         # skip paragraph tags with attributes
         # such as the date class
-        wod += line.prettify().replace('\xc2\xa0',' ').replace('\xc3\x97',' x ')
+        wod += line.prettify().replace('\xc2\xa0',' ').replace('\xc3\x97',' x ').replace('\xe2\x80\x9d','"')
 
     print wod
     return wod
