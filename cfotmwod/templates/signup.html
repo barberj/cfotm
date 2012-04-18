@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+{{ error }}
+<form action='{{ action }}' method=POST>
+<fieldset>
+    {% for field in form %}
+    {{ with_errors(field, style='font-weight: bold') }}
+    {% endfor %}
+    <button>Signup!</button>
+</fieldset>
+</form>
+{% endblock %}

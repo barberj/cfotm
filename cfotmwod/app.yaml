@@ -4,6 +4,10 @@ runtime: python27
 api_version: 1
 threadsafe: True
 
+libraries:
+- name: jinja2
+  version: latest
+
 handlers:
 - url: /favicon\.ico
   static_files: favicon.ico

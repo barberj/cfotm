@@ -1,0 +1,23 @@
+{% macro with_errors(field) %}
+    <div class="form_field">
+    {% if field.errors %}
+        {% set css_class = 'has_error ' + kwargs.pop('class', '') %}
+        {{ field.label }} {{ field(class=css_class, **kwargs) }}
+        <ul class="errors">{% for error in field.errors %}<li>{{ error|e }}</li>{% endfor %}</ul>
+    {% else %}
+        {{ field.label }} {{ field(**kwargs) }}
+    {% endif %}
+    </div>
+{% endmacro %}
+
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+        <title>On the Move Portal</title>
+    </head>
+    <body id="">
+        {% block content %}
+
+        {% endblock %}
+    </body>
+</html>

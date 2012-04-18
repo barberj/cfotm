@@ -7,17 +7,22 @@ from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 
+from google.appengine.ext import ndb
+import webapp2_extras.appengine.auth.models as auth_models
+
 from datetime import datetime
 from BeautifulSoup import BeautifulSoup
 
 import logging
-class WOD(db.Model):
+class WOD(ndb.Model):
+    created_at = ndb.DateTimeProperty(auto_now_add=True)
+    wod_date = ndb.DateProperty(required=True)
+    wod = ndb.TextProperty()
 
-    created_at = db.DateTimeProperty(auto_now_add=True)
-    wod_date = db.DateProperty(required=True)
-    wod = db.TextProperty()
+class OTMUser(auth_models.User):
+    email = ndb.StringProperty()
 
-def get():
+def get_wod():
     # other urlfetch options
     # http://code.google.com/appengine/docs/python/urlfetch/overview.html
     url = "http://www.crossfitonthemove.com/"
@@ -55,16 +60,16 @@ def get():
 
         # pull from data store to ensure it
         # wasn't just cleared from cache
-        current_wod = WOD.gql("WHERE wod_date=:date", date=date).get()
+        current_wod = WOD.query(WOD.wod_date==date).get()
         if not current_wod:
             # add the new wod
-            WOD(wod=db.Text(wod),wod_date=date).put()
+            WOD(wod=ndb.Text(wod),wod_date=date).put()
             memcache.delete(key='wods')
         else:
             # see if the wod has changed
             if current_wod.wod != wod:
                 # update the wod to the new value
-                current_wod.wod = db.Text(wod)
+                current_wod.wod = ndb.Text(wod)
                 current_wod.put()
                 memcache.delete(key='wods')
     else:
@@ -73,15 +78,15 @@ def get():
         if cached != wod:
             logging.debug('Going to update Wod as it has changed')
             # update the wod to the new value
-            current_wod = WOD.gql("WHERE wod_date=:date", date=date).get()
+            current_wod = WOD.query(WOD.wod_date==date).get()
             # should never not have a current wod
             # since its cached, but just in case
             if current_wod:
-                current_wod.wod = db.Text(wod)
+                current_wod.wod = ndb.Text(wod)
                 current_wod.put()
             else:
                 logging.debug('Cached, but not...')
-                WOD(wod=db.Text(wod),wod_date=date).put()
+                WOD(wod=ndb.Text(wod),wod_date=date).put()
 
             # update the cache
             memcache.set(key=cache_key, value=wod, time=60*60*24) # store for a day
