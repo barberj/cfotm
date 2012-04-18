@@ -19,6 +19,9 @@ handlers:
 - url: /css
   static_dir: touch/resources/css
 
+- url: /style
+  static_dir: public/style 
+
 - url: /images
   static_dir: public/images 
 

@@ -15,7 +15,7 @@
 import webapp2
 from webapp2_extras import sessions, auth, jinja2
 
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 from google.appengine.api import memcache
 from google.appengine.ext.webapp import template
 
@@ -42,9 +42,9 @@ class jsonEncoder(json.JSONEncoder):
             return obj.isoformat()
         elif isinstance(obj, datetime.date):
             return obj.strftime('%B %d, %Y')
-        elif isinstance(obj, db.Model):
+        elif isinstance(obj, ndb.Model):
             return dict((p, getattr(obj, p))
-                        for p in obj.properties())
+                        for p in obj._properties)
         else:
             return json.JSONEncoder.default(self,obj)
 
@@ -131,7 +131,7 @@ class ViewWodsHandler(BaseHandler):
             # wods aren't in the cache
             # lets go to the datastore
             query = model.WOD.query()
-            wods = [w for w in query.order('-wod_date')]
+            wods = [w for w in query.order(-model.WOD.wod_date)]
             wods = json.dumps(wods, cls=jsonEncoder)
             # add to cache
             memcache.add('wods',wods)

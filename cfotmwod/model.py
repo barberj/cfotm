@@ -63,13 +63,13 @@ def get_wod():
         current_wod = WOD.query(WOD.wod_date==date).get()
         if not current_wod:
             # add the new wod
-            WOD(wod=ndb.Text(wod),wod_date=date).put()
+            WOD(wod=db.Text(wod),wod_date=date).put()
             memcache.delete(key='wods')
         else:
             # see if the wod has changed
             if current_wod.wod != wod:
                 # update the wod to the new value
-                current_wod.wod = ndb.Text(wod)
+                current_wod.wod = db.Text(wod)
                 current_wod.put()
                 memcache.delete(key='wods')
     else:
@@ -82,11 +82,11 @@ def get_wod():
             # should never not have a current wod
             # since its cached, but just in case
             if current_wod:
-                current_wod.wod = ndb.Text(wod)
+                current_wod.wod = db.Text(wod)
                 current_wod.put()
             else:
                 logging.debug('Cached, but not...')
-                WOD(wod=ndb.Text(wod),wod_date=date).put()
+                WOD(wod=db.Text(wod),wod_date=date).put()
 
             # update the cache
             memcache.set(key=cache_key, value=wod, time=60*60*24) # store for a day
